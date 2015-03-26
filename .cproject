@@ -162,4 +162,5 @@
 			<resource resourceType="PROJECT" workspacePath="/myRIO Example - UART"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
