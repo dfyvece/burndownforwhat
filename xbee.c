@@ -26,13 +26,16 @@ uint8_t recvPayload(MyRio_Uart* uart, char* readData) {
 
 void formatCommand(char* buff, uint8_t type, uint16_t param) {
 
-#define COMMAND(TYPE) case TYPE: \
-						sprintf((char*)buff, "ATTYPE%x\n", param); \
-						break;
 	switch (type) {
-		COMMAND(DL);
-		COMMAND(DH);
-		COMMAND(NH);
+	case DL:
+		sprintf((char*)buff, "ATDL%x\n", param);
+		break;
+	case DH:
+			sprintf((char*)buff, "ATDH%x\n", param);
+			break;
+	case NH:
+			sprintf((char*)buff, "ATNH%x\n", param);
+			break;
 	}
 
 }
@@ -62,7 +65,8 @@ uint8_t sendCommand(MyRio_Uart* uart, uint8_t type, uint16_t param) {
 
     DEBUG("CHECK RESPONSE");
     status |= recvPayload(uart, readData);
-    if (1 || strncmp(readData,"OK", 2) == 0) {
+    DEBUG_PARAM("Response", readData);
+    if (strncmp(readData,"OK", 2) == 0) {
 
     	formatCommand(writeData, type, param);
 

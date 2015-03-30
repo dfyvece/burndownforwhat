@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     status = initUART(&uart);
 
     while (status >= VI_SUCCESS) {
-    	status = sendCommand(&uart, DL, 3333);
+    	//status = sendCommand(&uart, DL, 3333);
     	status = sendPayload(&uart, "hello");\
     	status = recvPayload(&uart, readData);
     	printf("Received: '%s'\n", readData);
