@@ -17,13 +17,15 @@ int main(int argc, char **argv) {
     MyRio_Uart uart;
 
     //char writeData[BUFF_SIZE];
-    //char readData[BUFF_SIZE];
+    char readData[BUFF_SIZE];
 
     status = initUART(&uart);
 
     while (status >= VI_SUCCESS) {
     	status = sendCommand(&uart, DL, 3333);
-    	status = sendPayload(&uart, "hello");
+    	status = sendPayload(&uart, "hello");\
+    	status = recvPayload(&uart, readData);
+    	printf("Received: '%s'\n", readData);
     }
 
     status = closeUART(&uart);

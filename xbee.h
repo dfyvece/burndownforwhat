@@ -21,7 +21,7 @@
 
 
 // VERBOSE MODE
-#define VERBOSE 1
+#define VERBOSE 0
 #define DEBUG(MSG) if (VERBOSE) { printf(MSG); printf("\n"); }
 #define DEBUG_PARAM(TAG,PARAM) if (VERBOSE) { printf(TAG); printf(": %s\n", PARAM); }
 

@@ -19,6 +19,7 @@ uint8_t sendPayload(MyRio_Uart* uart, char* s) {
 }
 
 uint8_t recvPayload(MyRio_Uart* uart, char* readData) {
+    memset(readData,0, BUFF_SIZE);
 	return Uart_Read(uart, (uint8_t*)readData, BUFF_SIZE);
 }
 
@@ -54,8 +55,8 @@ int32_t exitConfig(MyRio_Uart* uart) {
 uint8_t sendCommand(MyRio_Uart* uart, uint8_t type, uint16_t param) {
 
     int32_t status = 0;
-    char readData[256];
-    char writeData[256];
+    char readData[BUFF_SIZE];
+    char writeData[BUFF_SIZE];
 
     enterConfig(uart);
 
