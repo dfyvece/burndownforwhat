@@ -3,13 +3,19 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include "xbee.h"
 
-uint8_t sendPayload(MyRio_Uart* uart, char* str) {
-	int len = strlen(str);
+uint8_t sendPayload(MyRio_Uart* uart, char* s) {
+	int len = strlen(s);
+	char* str = (char*) calloc(len+2, sizeof(char));
+	strcpy(str,s);
 	str[len] = '\n';
 	str[len+1] = '\x00';
-	return  Uart_Write(uart, (uint8_t*)str, len+1);
+	uint8_t ret = Uart_Write(uart, (uint8_t*)str, len+1);
+	free(str);
+	return ret;
 }
 
 uint8_t recvPayload(MyRio_Uart* uart, char* readData) {
@@ -55,7 +61,7 @@ uint8_t sendCommand(MyRio_Uart* uart, uint8_t type, uint16_t param) {
 
     DEBUG("CHECK RESPONSE");
     status |= recvPayload(uart, readData);
-    if (strncmp(readData,"OK", 2) == 0) {
+    if (1 || strncmp(readData,"OK", 2) == 0) {
 
     	formatCommand(writeData, type, param);
 
