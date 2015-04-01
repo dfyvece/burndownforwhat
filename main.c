@@ -11,6 +11,19 @@
 #include "xbee.h"
 
 
+
+/*
+FILE* f;
+
+f = fopen("test.txt", "w");
+
+fprintf(f,"hello");
+
+fclose(f);
+
+*/
+
+
 int main(int argc, char **argv) {
 
     int32_t status = 0;
@@ -22,8 +35,9 @@ int main(int argc, char **argv) {
     status = initUART(&uart);
 
     while (status >= VI_SUCCESS) {
-    	//status = sendCommand(&uart, DL, 3333);
-    	status = sendPayload(&uart, "hello");\
+    	printf("Sending\n");
+    	status = sendCommand(&uart, "ATNH ff");
+    	status = sendPayload(&uart, "discover_neighbors");
     	status = recvPayload(&uart, readData);
     	printf("Received: '%s'\n", readData);
     }
