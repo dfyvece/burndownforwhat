@@ -13,7 +13,7 @@ uint8_t sendPayload(MyRio_Uart* uart, char* s) {
 	strcpy(str,s);
 	str[len] = '\n';
 	str[len+1] = '\x00';
-	uint8_t ret = Uart_Write(uart, (uint8_t*)str, len+1);
+	uint8_t ret = Uart_Write(uart, (uint8_t*)str, len);
 	free(str);
 	return ret;
 }
@@ -21,23 +21,6 @@ uint8_t sendPayload(MyRio_Uart* uart, char* s) {
 uint8_t recvPayload(MyRio_Uart* uart, char* readData) {
     memset(readData,0, BUFF_SIZE);
 	return Uart_Read(uart, (uint8_t*)readData, BUFF_SIZE);
-}
-
-
-void formatCommand(char* buff, uint8_t type, uint16_t param) {
-
-	switch (type) {
-	case DL:
-		sprintf((char*)buff, "ATDL%x\n", param);
-		break;
-	case DH:
-			sprintf((char*)buff, "ATDH%x\n", param);
-			break;
-	case NH:
-			sprintf((char*)buff, "ATNH%x\n", param);
-			break;
-	}
-
 }
 
 int32_t enterConfig(MyRio_Uart* uart) {
@@ -55,7 +38,7 @@ int32_t exitConfig(MyRio_Uart* uart) {
 	return status;
 }
 
-uint8_t sendCommand(MyRio_Uart* uart, uint8_t type, uint16_t param) {
+uint8_t sendCommand(MyRio_Uart* uart, char* comm) {
 
     int32_t status = 0;
     char readData[BUFF_SIZE];
@@ -68,10 +51,8 @@ uint8_t sendCommand(MyRio_Uart* uart, uint8_t type, uint16_t param) {
     DEBUG_PARAM("Response", readData);
     if (strncmp(readData,"OK", 2) == 0) {
 
-    	formatCommand(writeData, type, param);
-
-		DEBUG_PARAM("Sending command", writeData);
-		status |= sendPayload(uart, writeData);
+		DEBUG_PARAM("Sending command", comm);
+		status |= sendPayload(uart, comm);
 
 		DEBUG("Reading UART");
 		status |= recvPayload(uart, readData);

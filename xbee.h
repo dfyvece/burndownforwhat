@@ -36,7 +36,7 @@ int32_t closeUART(MyRio_Uart* uart);
 // Use with XBee
 uint8_t sendPayload(MyRio_Uart* uart, char* str);
 uint8_t recvPayload(MyRio_Uart* uart, char* readData);
-uint8_t sendCommand(MyRio_Uart* uart, uint8_t type /* Choose from commands below*/, uint16_t param);
+uint8_t sendCommand(MyRio_Uart* uart, char* comm);
 
 // SUPPORTED COMMANDS (make sure to add to xbee.c formatCommand function)
 #define DL 1
@@ -45,8 +45,8 @@ uint8_t sendCommand(MyRio_Uart* uart, uint8_t type /* Choose from commands below
 
 
 
+
 // Support functions
-void formatCommand(char* buff, uint8_t type, uint16_t param);
 int32_t enterConfig(MyRio_Uart* uart);
 int32_t exitConfig(MyRio_Uart* uart);
 
