@@ -26,11 +26,9 @@
 #define DEBUG_PARAM(TAG,PARAM) if (VERBOSE) { printf(TAG); printf(": %s\n", PARAM); }
 
 
-
 // UART Functions
 int32_t initUART(MyRio_Uart* uart);
 int32_t closeUART(MyRio_Uart* uart);
-
 
 
 // Use with XBee
@@ -42,8 +40,6 @@ uint8_t sendCommand(MyRio_Uart* uart, char* comm);
 #define DL 1
 #define DH 2
 #define NH 3
-
-
 
 
 // Support functions

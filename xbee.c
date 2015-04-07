@@ -42,7 +42,6 @@ uint8_t sendCommand(MyRio_Uart* uart, char* comm) {
 
     int32_t status = 0;
     char readData[BUFF_SIZE];
-    char writeData[BUFF_SIZE];
 
     enterConfig(uart);
 
