@@ -47,10 +47,13 @@ void pollNeighbors() {
 
 		num_neigh = 0;
 		int timeouts = 0;
+		pthread_mutex_lock(&lock);
+		status = sendCommand(&uart, "ATNH 1\n");
+		status = sendPayload(&uart, "0");
 		while (timeouts < MAX_TIMEOUTS) {
 
-			status = sendCommand(&uart, "ATNH 1");
-			status = sendPayload(&uart, "0");
+
+
 
 			recvPayload(&uart, readData);   	// TODO: test for more than three
 			if (readData[0] == '0') {							// first character must be 0
@@ -66,6 +69,7 @@ void pollNeighbors() {
 				timeouts++;
 
 		}
+		pthread_mutex_unlock(&lock);
 		sleep(POLL_TIME);
 	}
 

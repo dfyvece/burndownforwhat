@@ -26,15 +26,16 @@ uint8_t recvPayload(MyRio_Uart* uart, char* readData) {
 int32_t enterConfig(MyRio_Uart* uart) {
 	int32_t status = 0;
 	DEBUG("ENTER COMMAND MODE");
-	status = sendPayload(uart, "+++");
-	sleep(1);	// necessary delay as per documentation
+	char* str = "+++";
+	Uart_Write(uart, (uint8_t*)str, strlen(str));
+	sleep(3);	// necessary delay as per documentation
 	return status;
 }
 
 int32_t exitConfig(MyRio_Uart* uart) {
 	int32_t status = 0;
 	DEBUG("EXIT COMMAND MODE");
-	status = sendPayload(uart, "ATCN");
+	status = sendPayload(uart, "ATCN\n");
 	return status;
 }
 
@@ -50,16 +51,21 @@ uint8_t sendCommand(MyRio_Uart* uart, char* comm) {
     DEBUG_PARAM("Response", readData);
     if (strncmp(readData,"OK", 2) == 0) {
 
+    	sleep(3);
 		DEBUG_PARAM("Sending command", comm);
 		status |= sendPayload(uart, comm);
-
 		DEBUG("Reading UART");
+		sleep(3);//usleep(100000);	 // .1 seconds
 		status |= recvPayload(uart, readData);
 		DEBUG_PARAM("Data", readData);
-
+		sleep(3);
+		sendPayload(uart, "ATWR\n");
+		sleep(3);
     }
 
     exitConfig(uart);
+    status |= recvPayload(uart, readData);
+    DEBUG_PARAM("Command Close", readData);
     return status;
 
 }
