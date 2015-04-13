@@ -36,40 +36,27 @@ void sendAlarm() {
 
 
 
-char neighbors[MAX_NEIGH][8];
-char neighbor_status[MAX_NEIGH];
-int num_neigh;
+
 
 void pollNeighbors() {
+	char* sl = sendCommand(&uart, "ATSL");
+	char* sh = sendCommand(&uart, "ATSH");
 
 	for(;;) {
 		char readData[BUFF_SIZE];
+		char writeData[BUFF_SIZE];
 
 		num_neigh = 0;
 		int timeouts = 0;
 		pthread_mutex_lock(&lock);
-		status = sendCommand(&uart, "ATNH 1\n");
-		status = sendPayload(&uart, "0");
-		while (timeouts < MAX_TIMEOUTS) {
-
-
-
-
-			recvPayload(&uart, readData);   	// TODO: test for more than three
-			if (readData[0] == '0') {							// first character must be 0
-				timeouts = 0;
-				if (num_neigh < MAX_NEIGH) {
-					neighbor_status[num_neigh] = readData[1];	// second character is status
-					strcpy(neighbors[num_neigh], readData+2);	// rest is identifier
-					++num_neigh;
-				}
-				else break;
-			}
-			else
-				timeouts++;
-
-		}
+		status = sendCommand(&uart, "ATNH 1");
+		writeData = "0 ";			// 0 is request for information
+		strcat(writeData,sh);
+		strcat(writeData, " ");
+		strcat(writeData, sl);
+		status = sendPayload(&uart, writeData);
 		pthread_mutex_unlock(&lock);
+
 		sleep(POLL_TIME);
 	}
 

@@ -11,9 +11,9 @@ uint8_t sendPayload(MyRio_Uart* uart, char* s) {
 	int len = strlen(s);
 	char* str = (char*) calloc(len+2, sizeof(char));
 	strcpy(str,s);
-	str[len] = '\n';
+	str[len] = '\r';
 	str[len+1] = '\x00';
-	uint8_t ret = Uart_Write(uart, (uint8_t*)str, len);
+	uint8_t ret = Uart_Write(uart, (uint8_t*)str, len+2);
 	free(str);
 	return ret;
 }
@@ -35,14 +35,16 @@ int32_t enterConfig(MyRio_Uart* uart) {
 int32_t exitConfig(MyRio_Uart* uart) {
 	int32_t status = 0;
 	DEBUG("EXIT COMMAND MODE");
-	status = sendPayload(uart, "ATCN\n");
+	char* str = "ATCN\r";
+	Uart_Write(uart, (uint8_t*)str, strlen(str));
 	return status;
 }
 
-uint8_t sendCommand(MyRio_Uart* uart, char* comm) {
+char* sendCommand(MyRio_Uart* uart, char* comm) {
 
     int32_t status = 0;
     char readData[BUFF_SIZE];
+    char* result = calloc(BUFF_SIZE, sizeof(char));
 
     enterConfig(uart);
 
@@ -51,22 +53,18 @@ uint8_t sendCommand(MyRio_Uart* uart, char* comm) {
     DEBUG_PARAM("Response", readData);
     if (strncmp(readData,"OK", 2) == 0) {
 
-    	sleep(3);
 		DEBUG_PARAM("Sending command", comm);
 		status |= sendPayload(uart, comm);
 		DEBUG("Reading UART");
-		sleep(3);//usleep(100000);	 // .1 seconds
-		status |= recvPayload(uart, readData);
-		DEBUG_PARAM("Data", readData);
-		sleep(3);
-		sendPayload(uart, "ATWR\n");
-		sleep(3);
+		//usleep(100000);	 // .1 seconds
+		status |= recvPayload(uart, result);
+		DEBUG_PARAM("Data", result);
     }
 
     exitConfig(uart);
     status |= recvPayload(uart, readData);
     DEBUG_PARAM("Command Close", readData);
-    return status;
+    return result;
 
 }
 
