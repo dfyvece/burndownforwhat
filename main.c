@@ -21,7 +21,7 @@ MyRio_Uart uart;
 
 char neighbors[MAX_NEIGH][8];
 char neighbor_status[MAX_NEIGH];
-int num_neigh;
+int num_neigh = 0;
 
 
 int main(int argc, char **argv) {
@@ -45,8 +45,7 @@ int main(int argc, char **argv) {
     // poll and update neighbors data
     pthread_t poll_thread;
     pthread_create(&poll_thread, NULL, (void*)pollNeighbors, NULL);
-     for (;;);
-    /*
+
     // state machine
     while (status >= VI_SUCCESS) {
 
@@ -74,12 +73,28 @@ int main(int argc, char **argv) {
     	}
     	else if (strlen(readData) && readData[0] == '0') {  // check for poll request
 
+    		char sn_dh[8];
+    		char sn_dl[8];
+
+    		char* space1 = strchr(readData, ' ');
+    		char* space = strchr(readData+2, ' ');
+    		space[0] = '\x00';
+    		strcpy(sn_dh, space1+1);
+    		strcpy(sn_dl, space+1);
+
+    		DEBUG_PARAM("DH", sn_dh);
+    		DEBUG_PARAM("DL", sn_dl);
+
+    		char command[BUFF_SIZE];
+			sprintf(command, "ATDH %s", sn_dh);
+			//sendCommand(&uart, command);
+			sprintf(command, "ATDL %s", sn_dl);
+			//sendCommand(&uart, command);
+
 			char response[BUFF_SIZE];
-			strcpy(response, "2 ");
-			strcat(response, sh);
-			strcat(response, " ");
-			strcat(response, sl);
+			sprintf(response, "2 %s %s", sh, sl);
 			sendPayload(&uart, response);
+			sendCommand(&uart, "ATDL ffff");
 
     	}
     	else if (strlen(readData) && readData[0] == '2') {  // check for poll response
@@ -93,9 +108,15 @@ int main(int argc, char **argv) {
 
     	else if (strlen(readData) && readData[0] == '3') {  // check for supernode request
 
-			char sn_dh[8], sn_dl[8];
+    		char sn_dh[8], sn_dl[8];
 
-			// TODO get sn info
+			char* space = strchr(readData+2, ' ');
+			*space = 0;
+			strcpy(sn_dh, readData+2);
+			strcpy(sn_dl, space+1);
+
+			DEBUG_PARAM("DH", sn_dh);
+			DEBUG_PARAM("DL", sn_dl);
 
 			char command[BUFF_SIZE];
 			sprintf(command, "ATDH %s", sn_dh);
@@ -107,7 +128,8 @@ int main(int argc, char **argv) {
 			//sendCommand(&uart, "ATRO f");		// TODO test size
 
 			char packet[100];
-			sprintf(packet, "%s%s\n%d\n". sh, sl, status);		// SH SH
+			int i;
+			sprintf(packet, "%s%s\n%d\n", sh, sl, status);		// SH SH
 			for (i = 0 ; i < num_neigh; ++i ) {					// Status
 				strcat(packet, neighbors[i]);					// Neighbor[0]
 				strcat(packet, "\n");							// Neighbor[1]
@@ -116,6 +138,7 @@ int main(int argc, char **argv) {
 																//
 			sendPayload(&uart, packet);
 
+			sendCommand(&uart, "ATDL ffff");
 			//sendCommand(&uart, "ATRO 8");		// TODO test size
     	}
 
@@ -129,7 +152,7 @@ int main(int argc, char **argv) {
 
 
     }
-     */
+
     // shutdown on error
     closeIO();
     status = closeUART(&uart);

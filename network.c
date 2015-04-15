@@ -39,21 +39,21 @@ void sendAlarm() {
 
 
 void pollNeighbors() {
+	pthread_mutex_lock(&lock);
 	char* sl = sendCommand(&uart, "ATSL");
 	char* sh = sendCommand(&uart, "ATSH");
+	pthread_mutex_unlock(&lock);
+
 
 	for(;;) {
 		char readData[BUFF_SIZE];
 		char writeData[BUFF_SIZE];
 
-		num_neigh = 0;
+		//num_neigh = 0;
 		int timeouts = 0;
 		pthread_mutex_lock(&lock);
 		status = sendCommand(&uart, "ATNH 1");
-		writeData = "0 ";			// 0 is request for information
-		strcat(writeData,sh);
-		strcat(writeData, " ");
-		strcat(writeData, sl);
+		sprintf(writeData, "0 %s %s", sh, sl);			// 0 is request for information
 		status = sendPayload(&uart, writeData);
 		pthread_mutex_unlock(&lock);
 

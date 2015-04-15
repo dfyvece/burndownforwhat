@@ -23,7 +23,7 @@
 // VERBOSE MODE
 #define VERBOSE 1
 #define DEBUG(MSG) if (VERBOSE) { printf(MSG); printf("\n"); fflush(stdout); }
-#define DEBUG_PARAM(TAG,PARAM) if (VERBOSE) { printf(TAG); printf(": %s\n", PARAM); fflush(stdout); }
+#define DEBUG_PARAM(TAG,PARAM) if (VERBOSE) { printf(TAG); printf(": '%s'\n", PARAM); fflush(stdout); }
 
 
 // UART Functions

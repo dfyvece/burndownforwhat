@@ -12,7 +12,7 @@
 #include <pthread.h>
 
 // time in seconds inbetween polls
-int POLL_TIME = 10
+#define POLL_TIME 10000
 
 // max number of neighbors to keep track of
 #define MAX_NEIGH 10
