@@ -10,6 +10,13 @@
 
 #include <unistd.h>
 #include <pthread.h>
+#include "state.h"
+#include "xbee.h"
+#include "IO.h"
+
+extern State state;
+extern int32_t status;
+extern MyRio_Uart uart;
 
 // time in seconds inbetween polls
 #define POLL_TIME 10000
@@ -28,6 +35,10 @@ void sendAlarm();
 
 // search for neighbors and get their status
 void pollNeighbors();
+
+
+
+void superNode(int len);
 
 
 

@@ -9,10 +9,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
-#include "xbee.h"
+#include <stdlib.h>
 #include "network.h"
-#include "IO.h"
-#include "state.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 State state;
@@ -39,19 +40,32 @@ int main(int argc, char **argv) {
 
 	char* sl = sendCommand(&uart, "ATSL");
 	char* sh = sendCommand(&uart, "ATSH");
-    // TODO test this
+
+
+
+	FILE* poll_file;
+	char* poll_name = "bdfw_poll.dat";
+
+	// INITIALIZING POLL FILE
+	poll_file = fopen(poll_name, "w");
+	fprintf(poll_file, "1 10");
+	fclose(poll_file);
+
+
+	poll_file = fopen(poll_name, "r");
+
+
+	// read timestamp from poll file
+	int timestamp;
+	fscanf(poll_file, "%d", &timestamp);
 
 
     // poll and update neighbors data
     pthread_t poll_thread;
-    pthread_create(&poll_thread, NULL, (void*)pollNeighbors, NULL);
+    //pthread_create(&poll_thread, NULL, (void*)pollNeighbors, NULL);
 
     // state machine
     while (status >= VI_SUCCESS) {
-
-
-    	//sendPayload(&uart, "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.");
-
 
     	// check for fire
     	if ( !readSensor() ) {								// alarm is on
@@ -76,20 +90,20 @@ int main(int argc, char **argv) {
     		char sn_dh[8];
     		char sn_dl[8];
 
-    		char* space1 = strchr(readData, ' ');
-    		char* space = strchr(readData+2, ' ');
-    		space[0] = '\x00';
-    		strcpy(sn_dh, space1+1);
-    		strcpy(sn_dl, space+1);
+			char packet_type;
+			sscanf(readData, "%c %s %s", &packet_type, sn_dh, sn_dl);
+
+			// TODO: format for larger address range
+			strcpy(sn_dh,"13A200");
 
     		DEBUG_PARAM("DH", sn_dh);
     		DEBUG_PARAM("DL", sn_dl);
 
     		char command[BUFF_SIZE];
-			sprintf(command, "ATDH %s", sn_dh);
+			//sprintf(command, "ATDH %s", sn_dh);
 			//sendCommand(&uart, command);
 			sprintf(command, "ATDL %s", sn_dl);
-			//sendCommand(&uart, command);
+			sendCommand(&uart, command);
 
 			char response[BUFF_SIZE];
 			sprintf(response, "2 %s %s", sh, sl);
@@ -110,17 +124,18 @@ int main(int argc, char **argv) {
 
     		char sn_dh[8], sn_dl[8];
 
-			char* space = strchr(readData+2, ' ');
-			*space = 0;
-			strcpy(sn_dh, readData+2);
-			strcpy(sn_dl, space+1);
+			char packet_type;
+
+			sscanf(readData, "%c %s %s", &packet_type, sn_dh, sn_dl);
+			// TODO: format for larger address range
+			strcpy(sn_dh,"13A200");
 
 			DEBUG_PARAM("DH", sn_dh);
 			DEBUG_PARAM("DL", sn_dl);
 
 			char command[BUFF_SIZE];
-			sprintf(command, "ATDH %s", sn_dh);
-			sendCommand(&uart, command);
+			//sprintf(command, "ATDH %s", sn_dh);
+			//sendCommand(&uart, command);
 			sprintf(command, "ATDL %s", sn_dl);
 			sendCommand(&uart, command);
 
@@ -142,12 +157,41 @@ int main(int argc, char **argv) {
 			//sendCommand(&uart, "ATRO 8");		// TODO test size
     	}
 
-
-
-
-
-
     	pthread_mutex_unlock(&lock);
+
+
+    	// check poll file for data
+    	struct stat st;
+    	if (poll_file && stat(poll_name, &st) == 0) {
+    		fseek(poll_file, 0, SEEK_SET);
+    		int new_timestamp;
+    		int length;
+    		fscanf(poll_file, "%d%d", &new_timestamp, &length);
+    		if (new_timestamp > timestamp) {
+    			char m1[BUFF_SIZE], m2[BUFF_SIZE];
+    			sprintf(m1, "%d", timestamp);
+    			sprintf(m1, "%d", new_timestamp);
+    			DEBUG_PARAM("Timestamp", m1);
+    			DEBUG_PARAM("new Timestamp", m2);
+    			pthread_mutex_lock(&lock);
+    			DEBUG("SENDING SUPERNODE REQUEST");
+				sendCommand(&uart, "ATDL ffff");
+				char request[BUFF_SIZE];
+				sprintf(request, "3 %s %s", sh, sl);
+				sendPayload(&uart, request);
+				superNode(length);					// go into supernode mode
+				pthread_mutex_unlock(&lock);
+				timestamp = new_timestamp;
+    		}
+    	}
+    	else {
+    		DEBUG("WARNING: no poll file, creating one");
+    		poll_file = fopen(poll_name, "w");
+			fprintf(poll_file, "1");
+			fclose(poll_file);
+			poll_file = fopen(poll_name, "r");
+    	}
+
 
 
 
@@ -157,6 +201,9 @@ int main(int argc, char **argv) {
     closeIO();
     status = closeUART(&uart);
     pthread_mutex_destroy(&lock);
+
+   // fclose(poll_file);
+
 
     return status;
 }

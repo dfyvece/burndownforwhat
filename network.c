@@ -16,11 +16,6 @@
 #include "state.h"
 
 
-extern State state;
-extern int32_t status;
-extern MyRio_Uart uart;
-
-
 
 void sendAlarm() {
 
@@ -61,3 +56,37 @@ void pollNeighbors() {
 	}
 
 }
+
+
+
+void superNode(int len) {
+
+	FILE *result_file;
+	char* result_name = "bdfw_result.dat";
+	result_file = fopen(result_name, "wb");
+
+	char readData[BUFF_SIZE];
+
+	time_t begin, raw;
+	time(&raw);
+
+	struct tm* t_info;
+	t_info = localtime(&raw);
+	DEBUG("STARTING SUPERNODE");
+
+	while (difftime(time(0), mktime(t_info)) < (double)len ) {
+
+		recvPayload(&uart, readData);
+
+		if (readData && result_file) {
+			fprintf(result_file, "%s", readData);
+		}
+	}
+	DEBUG("ENDING SUPERNODE");
+
+    if (result_file) fclose(result_file);
+
+}
+
+
+
