@@ -69,7 +69,9 @@ int main(int argc, char **argv) {
 
     	// check for fire
     	if ( !readSensor() ) {								// alarm is on
+    		DEBUG("read sensor");
     		if (state == NORMAL) {
+    			DEBUG("sensed alarm");
 				state = HAS_FIRE;
 				pthread_t send_thread;
 				pthread_create(&send_thread, NULL, (void*)sendAlarm, NULL);

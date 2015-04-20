@@ -77,9 +77,11 @@ void superNode(int len) {
 	while (difftime(time(0), mktime(t_info)) < (double)len ) {
 
 		recvPayload(&uart, readData);
+		DEBUG_PARAM("Super Data", readData);
 
-		if (readData && result_file) {
+		if (readData) {
 			fprintf(result_file, "%s", readData);
+			fflush(result_file);
 		}
 	}
 	DEBUG("ENDING SUPERNODE");
